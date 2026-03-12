@@ -1,0 +1,68 @@
+import numpy as np
+
+#load data 
+print("Loading data...")
+x = np.load('data/x_train.npy') 
+y = np.load('data/y_train.npy')
+
+print(f'input matrix (x) shape: {x.shape}')
+print(f'labels matrix (y) shape: {y.shape}')
+
+# network architecture 
+input_size = 12
+hidden_size = 8
+output_size = 1
+
+# initialization of weights and biases
+#initialize weights randomly to break symmetry but keep them small to prevent saturation of activation functions
+np.random.seed(42) # for reproducibility
+
+#layer 1 (hidden layer)
+w1 = np.random.randn(hidden_size, input_size) * 0.01 # small random weights
+b1 = np.zeros((hidden_size, 1)) # zero biases
+
+#layer 2 (output layer)
+w2 = np.random.randn(output_size, hidden_size) * 0.01 # small random weights
+b2 = np.zeros((output_size, 1)) # zero biases
+
+# activation function (ReLU for hidden layer, sigmoid for output layer)
+def relu(z):
+    """used in hidden layer to learn non-linear patterns"""
+    return np.maximum(0, z)
+
+def sigmoid(z):
+    """used in output layer for binary classification to output probabilities"""
+    return 1 / (1 + np.exp(-z))
+
+print ("Network architecture and parameters initialized.")
+
+#forward pass
+
+print ("Performing forward pass...")
+
+#hidden layer
+z1 = np.dot(w1, x) + b1 # linear transformation
+a1 = relu(z1) # activation
+#output layer
+z2 = np.dot(w2, a1) + b2 # linear transformation
+a2 = sigmoid(z2) # activation
+
+#view results
+
+# m is the total number of battles (1000)
+m = x.shape[1]
+
+#calculate the loss (binary cross-entropy)
+# math : L = -[y* log(a2) + (1 - y) * log(1 - a2)] averaged over all examples
+# add a small number 1e-8 to prevent log(0) which is undefined
+loss = - (1/m) * np.sum(y * np.log(a2 + 1e-8) + (1 - y) * np.log(1 - a2 + 1e-8))
+
+#calculate accuracy
+# a2 outputs a probability between 0 and 1, we can threshold it at 0.5 to get predicted labels
+predictions = (a2 > 0.5).astype(int)
+
+#compare predictions to true labels
+accuracy = np.mean(predictions == y) * 100 # convert to percentage
+
+print(f'Loss: {loss:.4f}')
+print(f'Accuracy: {accuracy:.2f}%\n')
