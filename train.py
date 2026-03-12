@@ -5,8 +5,8 @@ print("Loading data...")
 x = np.load('data/x_train.npy') 
 y = np.load('data/y_train.npy')
 
-print(f'input matrix (x) shape: {x.shape}')
-print(f'labels matrix (y) shape: {y.shape}')
+# m is the total number of battles (1000)
+m = x.shape[1]
 
 # network architecture 
 input_size = 12
@@ -36,33 +36,54 @@ def sigmoid(z):
 
 print ("Network architecture and parameters initialized.")
 
-#forward pass
+# hyperparameters
+epochs = 5000 # number of times to iterate over the entire training dataset
+learning_rate = 0.05 # step size for updating weights and biases during training, higher learning rate can speed up training but may overshoot minima, lower learning rate can lead to more stable convergence but may take longer to train
 
-print ("Performing forward pass...")
+print ("\nStarting Training Loop...\n")
 
-#hidden layer
-z1 = np.dot(w1, x) + b1 # linear transformation
-a1 = relu(z1) # activation
-#output layer
-z2 = np.dot(w2, a1) + b2 # linear transformation
-a2 = sigmoid(z2) # activation
+#training loop
 
-#view results
+for epoch in range(epochs):
+    #forward pass
 
-# m is the total number of battles (1000)
-m = x.shape[1]
+    #hidden layer
+    z1 = np.dot(w1, x) + b1 # linear transformation
+    a1 = relu(z1) # activation
+    #output layer
+    z2 = np.dot(w2, a1) + b2 # linear transformation
+    a2 = sigmoid(z2) # activation
 
-#calculate the loss (binary cross-entropy)
-# math : L = -[y* log(a2) + (1 - y) * log(1 - a2)] averaged over all examples
-# add a small number 1e-8 to prevent log(0) which is undefined
-loss = - (1/m) * np.sum(y * np.log(a2 + 1e-8) + (1 - y) * np.log(1 - a2 + 1e-8))
+    #calculate the loss (binary cross-entropy)
+    # math : L = -[y* log(a2) + (1 - y) * log(1 - a2)] averaged over all examples
+    # add a small number 1e-8 to prevent log(0) which is undefined
+    loss = - (1/m) * np.sum(y * np.log(a2 + 1e-8) + (1 - y) * np.log(1 - a2 + 1e-8))
 
-#calculate accuracy
-# a2 outputs a probability between 0 and 1, we can threshold it at 0.5 to get predicted labels
-predictions = (a2 > 0.5).astype(int)
+    #backpropagation
+    # output layer error
+    dz2 = a2 - y # derivative of loss with respect to z2
 
-#compare predictions to true labels
-accuracy = np.mean(predictions == y) * 100 # convert to percentage
+    #calculate gradients for w2 and b2
+    dw2 = (1/m) * np.dot(dz2, a1.T)
+    db2 = (1/m) * np.sum(dz2, axis=1, keepdims=True)
 
-print(f'Loss: {loss:.4f}')
-print(f'Accuracy: {accuracy:.2f}%\n')
+    #push error back to hidden layer
+    dz1 = np.dot(w2.T, dz2) * (z1 > 0) # derivative of ReLU
+
+    #calculate gradients for w1 and b1
+    dw1 = (1/m) * np.dot(dz1, x.T)
+    db1 = (1/m) * np.sum(dz1, axis=1, keepdims=True)
+
+    #update weights and biases
+    w1 -= learning_rate * dw1
+    b1 -= learning_rate * db1
+    w2 -= learning_rate * dw2
+    b2 -= learning_rate * db2
+
+    #logging every 500 epochs
+    if epoch % 500 == 0:
+        predictions = (a2 > 0.5).astype(int)
+        accuracy = np.mean(predictions == y) * 100
+        print(f'Epoch {epoch:4d}: Loss = {loss:.4f}, Accuracy = {accuracy:.2f}%')
+
+print("\nTraining complete.")
