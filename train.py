@@ -5,6 +5,9 @@ print("Loading data...")
 x = np.load('data/x_train.npy') 
 y = np.load('data/y_train.npy')
 
+# !!! data normalization
+x = x / np.max(x) # scale features to [0, 1] range to improve training stability and convergence speed
+
 # m is the total number of battles (1000)
 m = x.shape[1]
 
