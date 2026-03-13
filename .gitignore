@@ -1,0 +1,9 @@
+# Ignore the Python virtual environment
+venv/
+
+# Ignore all datasets and compiled model weights
+data/
+
+# Ignore Python cache files (automatically generated)
+__pycache__/
+*.pyc
