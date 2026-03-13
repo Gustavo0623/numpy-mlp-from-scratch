@@ -90,3 +90,15 @@ for epoch in range(epochs):
         print(f'Epoch {epoch:4d}: Loss = {loss:.4f}, Accuracy = {accuracy:.2f}%')
 
 print("\nTraining complete.")
+
+# save the trained parameters for later use in prediction
+
+print("\nSaving trained parameters...")
+
+# save to data folder
+np.save('data/w1.npy', w1)
+np.save('data/b1.npy', b1)
+np.save('data/w2.npy', w2)
+np.save('data/b2.npy', b2)
+
+print("Parameters saved successfully.")
